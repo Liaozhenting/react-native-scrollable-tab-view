@@ -10,6 +10,8 @@ const {
   Text,
   Platform,
   Dimensions,
+  findNodeHandle,
+  UIManager
 } = ReactNative;
 const Button = require('./Button');
 
@@ -146,9 +148,21 @@ const ScrollableTabBar = createReactClass({
   },
 
   measureTab(page, event) {
-    const { x, width, height, } = event.nativeEvent.layout;
-    this._tabsMeasurements[page] = {left: x, right: x + width, width, height, };
-    this.updateView({value: this.props.scrollValue.__getValue(), });
+    if (Platform.OS === 'web') {
+      const handle = findNodeHandle(event.nativeEvent.target);
+      UIManager.measure(handle, (x, y, width, height) => {
+        this._tabsMeasurements[page] = {
+          left: x,
+          right: x + width,
+          width,
+          height
+        };
+      });
+    } else {
+      const {x, width, height} = event.nativeEvent.layout;
+      this._tabsMeasurements[page] = {left: x, right: x + width, width, height};
+    }
+    this.updateView({value: this.props.scrollValue._value});
   },
 
   render() {
